@@ -34,6 +34,8 @@ const InspectionPage: React.FC = () => {
   const [materials, setMaterials] = useState<MaterialItem[]>(defaultMaterials);
   const [score, setScore] = useState(85);
   const [remark, setRemark] = useState('');
+  const [showStockModal, setShowStockModal] = useState(false);
+  const [stockChecked, setStockChecked] = useState(false);
 
   const currentStore = useMemo(
     () => stores.find(s => s.id === currentStoreId) || stores[0],
@@ -74,6 +76,7 @@ const InspectionPage: React.FC = () => {
     setMaterials(task.materials?.length ? task.materials.map(m => ({ ...m })) : defaultMaterials.map(m => ({ ...m })));
     setScore(task.score || 85);
     setRemark(task.remark || '');
+    setStockChecked(task.status !== 'pending');
     setShowTaskModal(true);
   };
 
@@ -85,12 +88,36 @@ const InspectionPage: React.FC = () => {
         sourceType: ['camera', 'album']
       });
       console.log('[Inspection] 选择图片:', res.tempFilePaths.length);
-      setPhotos(prev => [...prev, ...res.tempFilePaths]);
+      if (res.tempFilePaths && res.tempFilePaths.length > 0) {
+        setPhotos(prev => [...prev, ...res.tempFilePaths]);
+        if (!stockChecked) {
+          setTimeout(() => setShowStockModal(true), 300);
+        }
+      }
     } catch (e) {
-      console.error('[Inspection] 拍照失败:', e);
-      const newPhoto = `https://picsum.photos/id/${Math.floor(Math.random() * 1000)}/600/400`;
-      setPhotos(prev => [...prev, newPhoto]);
+      console.log('[Inspection] 拍照取消或失败:', e);
     }
+  };
+
+  const confirmStockNormal = () => {
+    setIsOutOfStock(false);
+    setStockChecked(true);
+    setShowStockModal(false);
+    Taro.showToast({ title: '库存已确认为正常', icon: 'success' });
+  };
+
+  const confirmOutOfStock = () => {
+    setIsOutOfStock(true);
+    setShowStockModal(false);
+  };
+
+  const submitOutOfStockItems = () => {
+    if (!outOfStockItems.trim()) {
+      Taro.showToast({ title: '请填写缺货商品', icon: 'none' });
+      return;
+    }
+    setStockChecked(true);
+    Taro.showToast({ title: '缺货商品已记录', icon: 'success' });
   };
 
   const removePhoto = (idx: number) => {
@@ -122,6 +149,15 @@ const InspectionPage: React.FC = () => {
     if (!currentTask) return;
     if (photos.length === 0) {
       Taro.showToast({ title: '请上传照片', icon: 'none' });
+      return;
+    }
+    if (!stockChecked) {
+      Taro.showToast({ title: '请先完成库存状态确认', icon: 'none' });
+      setShowStockModal(true);
+      return;
+    }
+    if (isOutOfStock && !outOfStockItems.trim()) {
+      Taro.showToast({ title: '标记缺货时必须填写缺货商品', icon: 'none' });
       return;
     }
     const level = getScoreLevel();
@@ -246,27 +282,73 @@ const InspectionPage: React.FC = () => {
               </View>
 
               <View className={styles.formSection}>
-                <Text className={styles.sectionHeader}>📦 库存状态</Text>
+                <Text className={styles.sectionHeader}>📦 库存状态确认</Text>
                 <View className={styles.switchRow}>
-                  <Text className={styles.switchLabel}>是否存在缺货</Text>
+                  <Text className={styles.switchLabel}>库存状态</Text>
                   <Text
                     className={styles.switchValue}
-                    style={{ color: isOutOfStock ? '#f53f3f' : '#00b42a' }}
+                    style={{ color: !stockChecked ? '#ff7d00' : isOutOfStock ? '#f53f3f' : '#00b42a', fontWeight: 600 }}
                   >
-                    {isOutOfStock ? '缺货' : '正常'}
+                    {!stockChecked ? '待确认' : isOutOfStock ? '缺货' : '正常'}
                   </Text>
                 </View>
-                <View style={{ marginTop: 16 }}>
-                  <Switch checked={isOutOfStock} onChange={e => setIsOutOfStock(e.detail.value)} color="#165dff" />
-                </View>
+                {!stockChecked && (
+                  <View
+                    className={styles.formInput}
+                    style={{
+                      marginTop: 16,
+                      background: '#fff7e8',
+                      border: '2rpx dashed #ff7d00',
+                      textAlign: 'center',
+                      color: '#ff7d00',
+                      fontWeight: 600
+                    }}
+                    onClick={() => setShowStockModal(true)}
+                  >
+                    <Text>🔍 点击确认库存状态</Text>
+                  </View>
+                )}
+                {stockChecked && (
+                  <View style={{ marginTop: 16 }}>
+                    <View className={styles.switchRow}>
+                      <Text className={styles.switchLabel}>已确认结果</Text>
+                      <Text
+                        style={{
+                          padding: '8rpx 24rpx',
+                          borderRadius: 24,
+                          fontSize: 24,
+                          background: isOutOfStock ? '#ffece8' : '#e8ffea',
+                          color: isOutOfStock ? '#f53f3f' : '#00b42a'
+                        }}
+                      >
+                        {isOutOfStock ? `⚠️ 缺货：${(outOfStockItems || '').split('、').filter(Boolean).length} 项` : '✅ 库存充足'}
+                      </Text>
+                    </View>
+                    <View
+                      className={styles.formInput}
+                      style={{
+                        marginTop: 16,
+                        textAlign: 'center',
+                        color: '#86909c',
+                        border: '2rpx solid #e5e6eb'
+                      }}
+                      onClick={() => setShowStockModal(true)}
+                    >
+                      <Text>重新确认库存</Text>
+                    </View>
+                  </View>
+                )}
                 {isOutOfStock && (
                   <View className={styles.formRow} style={{ marginTop: 24 }}>
                     <Text className={styles.formLabel}>缺货商品 <Text className={styles.required}>*</Text></Text>
                     <Textarea
                       className={styles.formTextarea}
-                      placeholder="请输入缺货SKU，多个用顿号分隔"
+                      placeholder="请输入缺货SKU，多个用顿号分隔（如：可乐330ml、雪碧500ml）"
                       value={outOfStockItems}
                       onInput={e => setOutOfStockItems(e.detail.value)}
+                      onBlur={() => {
+                        if (outOfStockItems.trim()) setStockChecked(true);
+                      }}
                     />
                   </View>
                 )}
@@ -407,6 +489,110 @@ const InspectionPage: React.FC = () => {
                 <Text>提交巡查结果</Text>
               </View>
             </View>
+          </View>
+        </View>
+      )}
+
+      {showStockModal && (
+        <View className={styles.modalMask} onClick={() => setShowStockModal(false)}>
+          <View className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ maxHeight: '80vh', bottom: 0, top: 'auto' }}>
+            <View className={styles.modalHeader}>
+              <Text className={styles.modalTitle}>🔍 库存状态识别确认</Text>
+              <Text className={styles.modalClose} onClick={() => setShowStockModal(false)}>×</Text>
+            </View>
+            <ScrollView scrollY className={styles.modalBody}>
+              <View style={{ padding: '16rpx 32rpx' }}>
+                <View style={{
+                  padding: 24,
+                  borderRadius: 16,
+                  background: '#f7f8fa',
+                  marginBottom: 32
+                }}>
+                  <Text style={{ color: '#4e5969', fontSize: 26, lineHeight: '40rpx' }}>
+                    请根据刚拍摄的货架照片，确认当前货架的库存情况。系统将把您的判断作为陈列评分依据之一。
+                  </Text>
+                </View>
+
+                <Text style={{ fontSize: 30, fontWeight: 600, marginBottom: 24, color: '#1d2129' }}>请选择库存状态：</Text>
+
+                <View
+                  style={{
+                    padding: 32,
+                    borderRadius: 20,
+                    border: `4rpx solid ${!isOutOfStock ? '#00b42a' : '#e5e6eb'}`,
+                    background: !isOutOfStock ? '#e8ffea' : '#fff',
+                    marginBottom: 24,
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                  onClick={confirmStockNormal}
+                >
+                  <Text style={{ fontSize: 60, marginRight: 24 }}>✅</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 32, fontWeight: 700, color: !isOutOfStock ? '#00b42a' : '#1d2129' }}>
+                      库存正常
+                    </Text>
+                    <Text style={{ fontSize: 24, color: '#86909c', marginTop: 8 }}>
+                      货架陈列丰满，无明显缺货SKU
+                    </Text>
+                  </View>
+                  {!isOutOfStock && <Text style={{ fontSize: 40, color: '#00b42a' }}>✓</Text>}
+                </View>
+
+                <View
+                  style={{
+                    padding: 32,
+                    borderRadius: 20,
+                    border: `4rpx solid ${isOutOfStock ? '#f53f3f' : '#e5e6eb'}`,
+                    background: isOutOfStock ? '#ffece8' : '#fff',
+                    marginBottom: 32
+                  }}
+                  onClick={confirmOutOfStock}
+                >
+                  <View style={{ display: 'flex', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 60, marginRight: 24 }}>⚠️</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 32, fontWeight: 700, color: isOutOfStock ? '#f53f3f' : '#1d2129' }}>
+                        存在缺货
+                      </Text>
+                      <Text style={{ fontSize: 24, color: '#86909c', marginTop: 8 }}>
+                        有空缺位置或SKU不足，需详细记录
+                      </Text>
+                    </View>
+                    {isOutOfStock && <Text style={{ fontSize: 40, color: '#f53f3f' }}>✓</Text>}
+                  </View>
+                </View>
+
+                {isOutOfStock && (
+                  <View style={{ padding: 24, borderRadius: 16, background: '#fff7e8', marginBottom: 32 }}>
+                    <Text style={{ fontSize: 28, fontWeight: 600, color: '#ff7d00', marginBottom: 16 }}>
+                      📝 请填写缺货商品（必填）
+                    </Text>
+                    <Textarea
+                      className={styles.formTextarea}
+                      placeholder="如：可乐330ml、雪碧500ml、芬达橙味..."
+                      value={outOfStockItems}
+                      onInput={e => setOutOfStockItems(e.detail.value)}
+                      style={{ minHeight: 160, marginTop: 0 }}
+                    />
+                    <View
+                      style={{
+                        marginTop: 20,
+                        padding: '20rpx 32rpx',
+                        borderRadius: 12,
+                        background: outOfStockItems.trim() ? '#00b42a' : '#c9cdd4',
+                        textAlign: 'center'
+                      }}
+                      onClick={submitOutOfStockItems}
+                    >
+                      <Text style={{ color: '#fff', fontWeight: 600, fontSize: 28 }}>
+                        确认并记录缺货商品
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+            </ScrollView>
           </View>
         </View>
       )}

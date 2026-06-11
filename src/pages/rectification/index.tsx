@@ -80,19 +80,15 @@ const RectificationPage: React.FC = () => {
         sourceType: ['camera', 'album']
       });
       const paths = res.tempFilePaths;
-      if (type === 'form') {
-        setForm(prev => ({ ...prev, photos: [...prev.photos, ...paths].slice(0, 9) }));
-      } else {
-        setFeedback(prev => ({ ...prev, photos: [...prev.photos, ...paths].slice(0, 9) }));
+      if (paths && paths.length > 0) {
+        if (type === 'form') {
+          setForm(prev => ({ ...prev, photos: [...prev.photos, ...paths].slice(0, 9) }));
+        } else {
+          setFeedback(prev => ({ ...prev, photos: [...prev.photos, ...paths].slice(0, 9) }));
+        }
       }
     } catch (e) {
-      console.error('[Rectification] 拍照失败:', e);
-      const demoPhoto = `https://picsum.photos/id/${Math.floor(Math.random() * 1000)}/600/400`;
-      if (type === 'form') {
-        setForm(prev => ({ ...prev, photos: [...prev.photos, demoPhoto].slice(0, 9) }));
-      } else {
-        setFeedback(prev => ({ ...prev, photos: [...prev.photos, demoPhoto].slice(0, 9) }));
-      }
+      console.log('[Rectification] 拍照取消或失败:', e);
     }
   };
 
