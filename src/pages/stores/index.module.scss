@@ -1,0 +1,285 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #e8f3ff 0%, $color-bg-page 30%);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120rpx);
+}
+
+.header {
+  padding: $spacing-lg $page-padding 0;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+}
+
+.userGreeting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+
+  .userInfo {
+    .hello {
+      font-size: $font-size-sm;
+      opacity: 0.85;
+    }
+    .userName {
+      font-size: $font-size-xl;
+      font-weight: $font-weight-semibold;
+      margin-top: 4rpx;
+    }
+  }
+
+  .dateBadge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 12rpx 24rpx;
+    border-radius: $radius-round;
+    font-size: $font-size-xs;
+    backdrop-filter: blur(10px);
+  }
+}
+
+.statsRow {
+  display: flex;
+  gap: $spacing-md;
+  padding-bottom: $spacing-lg;
+}
+
+.tabBar {
+  display: flex;
+  background: $color-bg-card;
+  margin: $spacing-md $page-padding;
+  border-radius: $radius-lg;
+  padding: 8rpx;
+  box-shadow: $shadow-card;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tabItem {
+  flex: 1;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+
+  text {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    font-weight: $font-weight-medium;
+  }
+
+  &.active {
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+
+    text {
+      color: $color-text-white;
+    }
+  }
+}
+
+.routeSection {
+  margin: $spacing-md $page-padding;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.routeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+
+  .routeTitle {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+  }
+
+  .routeCount {
+    font-size: $font-size-sm;
+    color: $color-primary;
+    background: $color-bg-tag;
+    padding: 4rpx 16rpx;
+    border-radius: $radius-round;
+  }
+}
+
+.routeMap {
+  height: 200rpx;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f3ff 100%);
+  border-radius: $radius-md;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .mapIcon {
+    font-size: 100rpx;
+    opacity: 0.3;
+  }
+
+  .routeLine {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 4rpx;
+    background: repeating-linear-gradient(
+      90deg,
+      $color-primary,
+      $color-primary 16rpx,
+      transparent 16rpx,
+      transparent 32rpx
+    );
+    transform: translateY(-50%);
+  }
+
+  .routeDots {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 48rpx;
+
+    .routeDot {
+      width: 56rpx;
+      height: 56rpx;
+      border-radius: $radius-round;
+      background: $color-bg-card;
+      border: 4rpx solid $color-primary;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-bold;
+      color: $color-primary;
+      box-shadow: 0 4rpx 12rpx rgba($color-primary, 0.3);
+
+      &.done {
+        background: $color-success;
+        border-color: $color-success;
+        color: $color-text-white;
+      }
+
+      &.current {
+        transform: scale(1.15);
+        box-shadow: 0 6rpx 20rpx rgba($color-primary, 0.4);
+      }
+    }
+  }
+}
+
+.routeList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.routeItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+
+  &:active {
+    background: $color-bg-hover;
+  }
+
+  .itemIndex {
+    width: 48rpx;
+    height: 48rpx;
+    border-radius: $radius-round;
+    background: $color-bg-tag;
+    color: $color-primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    flex-shrink: 0;
+
+    &.done {
+      background: $color-bg-success;
+      color: $color-success;
+    }
+
+    &.current {
+      background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+      color: $color-text-white;
+    }
+  }
+
+  .itemContent {
+    flex: 1;
+    min-width: 0;
+
+    .itemName {
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $color-text-primary;
+      @include text-ellipsis;
+    }
+
+    .itemAddr {
+      font-size: $font-size-xs;
+      color: $color-text-tertiary;
+      margin-top: 4rpx;
+      @include text-ellipsis;
+    }
+  }
+
+  .itemStatus {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    flex-shrink: 0;
+  }
+}
+
+.storeList {
+  padding: 0 $page-padding;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.emptyState {
+  padding: 120rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .emptyIcon {
+    font-size: 120rpx;
+    margin-bottom: $spacing-md;
+    opacity: 0.3;
+  }
+
+  .emptyText {
+    font-size: $font-size-md;
+    color: $color-text-tertiary;
+  }
+}

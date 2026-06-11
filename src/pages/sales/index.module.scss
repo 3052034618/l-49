@@ -1,0 +1,517 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #e8ffea 0%, $color-bg-page 25%);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120rpx);
+}
+
+.header {
+  padding: $spacing-lg $page-padding;
+  background: linear-gradient(135deg, $color-success 0%, #2ed552 100%);
+  color: $color-text-white;
+}
+
+.pageTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-xs;
+}
+
+.pageSubtitle {
+  font-size: $font-size-sm;
+  opacity: 0.85;
+}
+
+.summaryRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-sm;
+  padding: $spacing-lg $page-padding 0;
+  margin-top: -32rpx;
+}
+
+.summaryCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  box-shadow: $shadow-card;
+  text-align: center;
+  border-top: 6rpx solid $color-success;
+
+  &:nth-child(2) {
+    border-top-color: $color-primary;
+  }
+
+  &:nth-child(3) {
+    border-top-color: $color-accent;
+  }
+
+  .sValue {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    line-height: 1.2;
+    margin-bottom: 4rpx;
+  }
+
+  .sLabel {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+  }
+}
+
+.storeSelectBar {
+  margin: $spacing-md $page-padding;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
+  box-shadow: $shadow-card;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all $transition-base;
+
+  &:active {
+    background: $color-bg-hover;
+  }
+
+  .storeInfo {
+    flex: 1;
+    min-width: 0;
+
+    .sLabel {
+      font-size: $font-size-xs;
+      color: $color-text-tertiary;
+      margin-bottom: 4rpx;
+    }
+
+    .sName {
+      font-size: $font-size-md;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+      @include text-ellipsis;
+    }
+  }
+
+  .selectArrow {
+    color: $color-text-tertiary;
+    font-size: $font-size-md;
+    padding-left: $spacing-sm;
+  }
+}
+
+.fab {
+  position: fixed;
+  right: $page-padding;
+  bottom: calc(env(safe-area-inset-bottom) + 140rpx);
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $color-success 0%, #2ed552 100%);
+  color: $color-text-white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 32rpx rgba($color-success, 0.4);
+  z-index: 100;
+  transition: all $transition-base;
+
+  text {
+    font-size: 64rpx;
+    line-height: 1;
+    font-weight: 300;
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+.recordList {
+  padding: 0 $page-padding;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.recordCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.recordHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-md;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.recordStore {
+  flex: 1;
+  min-width: 0;
+
+  .rName {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-xs;
+    @include text-ellipsis;
+  }
+
+  .rTime {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+  }
+}
+
+.recordAmount {
+  text-align: right;
+  flex-shrink: 0;
+  margin-left: $spacing-sm;
+
+  .aValue {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $color-success;
+    line-height: 1.2;
+  }
+
+  .aLabel {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+  }
+}
+
+.productList {
+  margin-bottom: $spacing-md;
+}
+
+.productRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-sm 0;
+
+  &:not(:last-child) {
+    border-bottom: 1rpx dashed $color-divider;
+  }
+}
+
+.productName {
+  flex: 1;
+  min-width: 0;
+  margin-right: $spacing-sm;
+
+  .pName {
+    font-size: $font-size-sm;
+    color: $color-text-primary;
+    @include text-ellipsis;
+  }
+
+  .pSku {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    margin-top: 4rpx;
+  }
+}
+
+.productQty {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  margin-right: $spacing-lg;
+  flex-shrink: 0;
+}
+
+.productAmount {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex-shrink: 0;
+}
+
+.recordRemark {
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+
+  .remarkLabel {
+    color: $color-success;
+    font-weight: $font-weight-medium;
+    margin-right: $spacing-xs;
+  }
+}
+
+.modalMask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.modalContent {
+  background: $color-bg-page;
+  width: 100%;
+  border-radius: $radius-xl $radius-xl 0 0;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+  background: $color-bg-card;
+  border-radius: $radius-xl $radius-xl 0 0;
+
+  .modalTitle {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+  }
+
+  .modalClose {
+    font-size: 48rpx;
+    color: $color-text-tertiary;
+    padding: 0 $spacing-sm;
+  }
+}
+
+.modalBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: $spacing-lg;
+}
+
+.formSection {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+
+  .sectionHeader {
+    font-size: $font-size-md;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-md;
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+  }
+}
+
+.formRow {
+  margin-bottom: $spacing-md;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .formLabel {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    margin-bottom: $spacing-sm;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .required {
+      color: $color-error;
+      margin-left: 4rpx;
+    }
+  }
+}
+
+.formInput {
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: 24rpx;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &:focus-within {
+    border-color: $color-success;
+    background: $color-bg-card;
+  }
+}
+
+.productItem {
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+  position: relative;
+
+  .removeBtn {
+    position: absolute;
+    top: $spacing-sm;
+    right: $spacing-sm;
+    width: 48rpx;
+    height: 48rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $color-text-tertiary;
+    font-size: 36rpx;
+  }
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: $spacing-sm;
+  margin-top: $spacing-sm;
+}
+
+.productField {
+  .fieldLabel {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    margin-bottom: 4rpx;
+  }
+
+  .fieldInput {
+    background: $color-bg-card;
+    border-radius: $radius-sm;
+    padding: 16rpx;
+    font-size: $font-size-sm;
+  }
+}
+
+.addProductBtn {
+  background: rgba($color-success, 0.08);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  text-align: center;
+  color: $color-success;
+  font-weight: $font-weight-medium;
+  font-size: $font-size-sm;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.totalsBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-md;
+  background: linear-gradient(135deg, rgba($color-success, 0.08) 0%, rgba($color-success, 0.15) 100%);
+  border-radius: $radius-md;
+  margin-top: $spacing-md;
+
+  .totalLabel {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+  }
+
+  .totalValue {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $color-success;
+  }
+}
+
+.formTextarea {
+  min-height: 160rpx;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: 24rpx;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: 1.6;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &:focus-within {
+    border-color: $color-success;
+    background: $color-bg-card;
+  }
+}
+
+.modalFooter {
+  padding: $spacing-lg;
+  background: $color-bg-card;
+  padding-bottom: calc(env(safe-area-inset-bottom) + #{$spacing-lg});
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+
+  .submitBtn {
+    height: $button-height-lg;
+    background: linear-gradient(135deg, $color-success 0%, #2ed552 100%);
+    border-radius: $radius-button;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text {
+      color: $color-text-white;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+    }
+
+    &:active {
+      opacity: 0.9;
+      transform: scale(0.98);
+    }
+  }
+}
+
+.emptyState {
+  padding: 120rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .emptyIcon {
+    font-size: 120rpx;
+    margin-bottom: $spacing-md;
+    opacity: 0.3;
+  }
+
+  .emptyText {
+    font-size: $font-size-md;
+    color: $color-text-tertiary;
+    margin-bottom: $spacing-md;
+  }
+
+  .emptyBtn {
+    padding: 16rpx 40rpx;
+    background: linear-gradient(135deg, $color-success 0%, #2ed552 100%);
+    color: $color-text-white;
+    border-radius: $radius-button;
+    font-size: $font-size-sm;
+  }
+}

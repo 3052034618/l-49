@@ -1,0 +1,481 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #e8f3ff 0%, $color-bg-page 20%);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120rpx);
+}
+
+.header {
+  padding: $spacing-lg $page-padding $spacing-xl;
+  background: linear-gradient(135deg, $color-primary 0%, #4080ff 50%, #6ba0ff 100%);
+  color: $color-text-white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -100rpx;
+    right: -100rpx;
+    width: 400rpx;
+    height: 400rpx;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+}
+
+.profileRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  position: relative;
+  z-index: 1;
+}
+
+.avatar {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: $radius-round;
+  background: rgba(255, 255, 255, 0.25);
+  border: 4rpx solid rgba(255, 255, 255, 0.4);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.profileInfo {
+  flex: 1;
+  min-width: 0;
+
+  .userName {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-xs;
+  }
+
+  .userRole {
+    font-size: $font-size-sm;
+    opacity: 0.85;
+    margin-bottom: $spacing-xs;
+  }
+
+  .userTeam {
+    font-size: $font-size-xs;
+    opacity: 0.7;
+    @include text-ellipsis;
+  }
+}
+
+.rankBadge {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-lg;
+  text-align: center;
+  flex-shrink: 0;
+
+  .rankNum {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    line-height: 1;
+  }
+
+  .rankLabel {
+    font-size: $font-size-xs;
+    opacity: 0.85;
+    margin-top: 4rpx;
+  }
+
+  .rankTrend {
+    font-size: 20rpx;
+    margin-top: 4rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rpx;
+  }
+}
+
+.statsOverview {
+  margin: 0 $page-padding;
+  margin-top: -48rpx;
+  position: relative;
+  z-index: 2;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-sm;
+}
+
+.statCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6rpx;
+  }
+
+  &.blue::after { background: linear-gradient(90deg, $color-primary, $color-primary-light); }
+  &.green::after { background: linear-gradient(90deg, $color-success, #2ed552); }
+  &.orange::after { background: linear-gradient(90deg, $color-accent, $color-accent-light); }
+  &.purple::after { background: linear-gradient(90deg, #722ed1, #9254de); }
+
+  .statLabel {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    margin-bottom: $spacing-xs;
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+  }
+
+  .statValue {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    line-height: 1.2;
+    margin-bottom: $spacing-xs;
+  }
+
+  .statDesc {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+
+    b {
+      font-weight: $font-weight-medium;
+    }
+  }
+
+  .progressTrack {
+    height: 12rpx;
+    background: $color-divider;
+    border-radius: $radius-round;
+    margin-top: $spacing-sm;
+    overflow: hidden;
+  }
+
+  .progressFill {
+    height: 100%;
+    border-radius: $radius-round;
+    transition: width 0.5s ease;
+  }
+}
+
+.sectionCard {
+  margin: $spacing-md $page-padding;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+
+  .sectionTitle {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+  }
+
+  .sectionAction {
+    font-size: $font-size-xs;
+    color: $color-primary;
+  }
+}
+
+.weekChart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: $spacing-xs;
+  height: 280rpx;
+  padding: $spacing-sm 0;
+}
+
+.weekBar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.barWrap {
+  width: 100%;
+  max-width: 56rpx;
+  background: rgba($color-primary, 0.08);
+  border-radius: $radius-sm;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 200rpx;
+  overflow: hidden;
+}
+
+.barTarget {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 6rpx,
+    rgba($color-primary, 0.15) 6rpx,
+    rgba($color-primary, 0.15) 12rpx
+  );
+  opacity: 0.5;
+}
+
+.barFill {
+  width: 100%;
+  border-radius: $radius-sm $radius-sm 0 0;
+  background: linear-gradient(180deg, $color-primary-light 0%, $color-primary 100%);
+  position: relative;
+  transition: height 0.5s ease;
+
+  &.good {
+    background: linear-gradient(180deg, #2ed552 0%, $color-success 100%);
+  }
+
+  &.warn {
+    background: linear-gradient(180deg, $color-accent-light 0%, $color-accent 100%);
+  }
+}
+
+.barValue {
+  position: absolute;
+  top: -36rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20rpx;
+  font-weight: $font-weight-bold;
+  white-space: nowrap;
+  color: $color-text-secondary;
+}
+
+.barLabel {
+  margin-top: $spacing-sm;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-medium;
+}
+
+.barLegend {
+  display: flex;
+  justify-content: center;
+  gap: $spacing-lg;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+
+  .legendDot {
+    width: 16rpx;
+    height: 16rpx;
+    border-radius: $radius-xs;
+  }
+}
+
+.scoreDist {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.distItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.distLabel {
+  width: 140rpx;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  flex-shrink: 0;
+}
+
+.distBar {
+  flex: 1;
+  height: 32rpx;
+  background: $color-divider;
+  border-radius: $radius-round;
+  overflow: hidden;
+  position: relative;
+}
+
+.distFill {
+  height: 100%;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  padding-left: $spacing-sm;
+  transition: width 0.5s ease;
+}
+
+.distValue {
+  font-size: 20rpx;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.2);
+}
+
+.distCount {
+  width: 80rpx;
+  text-align: right;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex-shrink: 0;
+}
+
+.goalSection {
+  margin: 0 $page-spacing $spacing-md;
+}
+
+.goalCard {
+  background: linear-gradient(135deg, #fff7e8 0%, #fff 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  border: 2rpx solid rgba($color-accent, 0.1);
+}
+
+.goalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-lg;
+}
+
+.goalTitle {
+  .gLabel {
+    font-size: $font-size-xs;
+    color: $color-accent;
+    font-weight: $font-weight-medium;
+    margin-bottom: 4rpx;
+  }
+
+  .gName {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+  }
+}
+
+.goalPercent {
+  text-align: right;
+
+  .gNum {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    color: $color-accent;
+    line-height: 1;
+  }
+
+  .gText {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    margin-top: 4rpx;
+  }
+}
+
+.goalBar {
+  height: 20rpx;
+  background: rgba($color-accent, 0.1);
+  border-radius: $radius-round;
+  overflow: hidden;
+  margin-bottom: $spacing-md;
+}
+
+.goalFill {
+  height: 100%;
+  border-radius: $radius-round;
+  background: linear-gradient(90deg, $color-accent, $color-accent-light);
+  transition: width 0.5s ease;
+}
+
+.goalDetails {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: $radius-md;
+}
+
+.goalDetail {
+  .dLabel {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    margin-bottom: 4rpx;
+  }
+
+  .dValue {
+    font-size: $font-size-md;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+  }
+}
+
+.infoList {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  margin: 0 $page-padding;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+.infoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-md $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .infoLabel {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  .infoValue {
+    font-size: $font-size-sm;
+    color: $color-text-primary;
+    font-weight: $font-weight-medium;
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+  }
+}

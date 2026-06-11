@@ -1,0 +1,29 @@
+@use './styles/variables.scss' as *;
+
+page {
+  background-color: $color-bg-page;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
+  color: $color-text-primary;
+  font-size: $font-size-md;
+  line-height: $line-height-normal;
+  box-sizing: border-box;
+  min-height: 100vh;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+image {
+  display: block;
+}
+
+view, text {
+  box-sizing: border-box;
+}
+
+.safe-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 16rpx);
+}
