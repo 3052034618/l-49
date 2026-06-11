@@ -11,10 +11,11 @@ type FilterType = 'all' | 'pending' | 'processing' | 'completed' | 'approved' | 
 type ModalType = 'create' | 'detail' | 'feedback' | null;
 
 const RectificationPage: React.FC = () => {
-  const { stores, currentStoreId, rectifications, addRectification, updateRectification, shelfTasks } = useApp();
+  const { stores, currentStoreId, setCurrentStoreId, rectifications, addRectification, updateRectification, shelfTasks } = useApp();
   const [filter, setFilter] = useState<FilterType>('all');
   const [modalType, setModalType] = useState<ModalType>(null);
   const [currentItem, setCurrentItem] = useState<RectificationItem | null>(null);
+  const [showStoreModal, setShowStoreModal] = useState(false);
 
   const [form, setForm] = useState({
     storeId: currentStoreId,
@@ -33,20 +34,21 @@ const RectificationPage: React.FC = () => {
 
   const currentStore = useMemo(() => stores.find(s => s.id === currentStoreId), [stores, currentStoreId]);
   const storeTasks = useMemo(() => shelfTasks.filter(t => t.storeId === currentStoreId), [shelfTasks, currentStoreId]);
+  const storeRects = useMemo(() => rectifications.filter(r => r.storeId === currentStoreId), [rectifications, currentStoreId]);
 
   const counts = useMemo(() => ({
-    all: rectifications.length,
-    pending: rectifications.filter(r => r.status === 'pending').length,
-    processing: rectifications.filter(r => r.status === 'processing').length,
-    completed: rectifications.filter(r => r.status === 'completed').length,
-    approved: rectifications.filter(r => r.status === 'approved').length,
-    rejected: rectifications.filter(r => r.status === 'rejected').length
-  }), [rectifications]);
+    all: storeRects.length,
+    pending: storeRects.filter(r => r.status === 'pending').length,
+    processing: storeRects.filter(r => r.status === 'processing').length,
+    completed: storeRects.filter(r => r.status === 'completed').length,
+    approved: storeRects.filter(r => r.status === 'approved').length,
+    rejected: storeRects.filter(r => r.status === 'rejected').length
+  }), [storeRects]);
 
   const filteredItems = useMemo(() => {
-    if (filter === 'all') return rectifications;
-    return rectifications.filter(r => r.status === filter);
-  }, [rectifications, filter]);
+    if (filter === 'all') return storeRects;
+    return storeRects.filter(r => r.status === filter);
+  }, [storeRects, filter]);
 
   const openCreate = () => {
     setForm({
@@ -161,6 +163,17 @@ const RectificationPage: React.FC = () => {
       <View className={styles.header}>
         <Text className={styles.pageTitle}>问题整改 🛠️</Text>
         <Text className={styles.pageSubtitle}>记录问题，追踪整改，闭环管理</Text>
+      </View>
+
+      <View className={styles.storeBar}>
+        <View className={styles.storeInfo}>
+          <Text className={styles.storeLabel}>当前门店</Text>
+          <Text className={styles.storeName}>{currentStore?.name || '请选择门店'}</Text>
+          <Text className={styles.storeAddr}>📍 {currentStore?.address || '--'}</Text>
+        </View>
+        <View className={styles.storeSwitch} onClick={() => setShowStoreModal(true)}>
+          <Text>🔄 切换</Text>
+        </View>
       </View>
 
       <View className={styles.statsGrid}>
@@ -503,6 +516,42 @@ const RectificationPage: React.FC = () => {
                 </View>
               </View>
             )}
+          </View>
+        </View>
+      )}
+
+      {showStoreModal && (
+        <View className={styles.modalMask} onClick={() => setShowStoreModal(false)}>
+          <View className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <View className={styles.modalHeader}>
+              <Text className={styles.modalTitle}>选择门店</Text>
+              <Text className={styles.modalClose} onClick={() => setShowStoreModal(false)}>×</Text>
+            </View>
+            <ScrollView scrollY className={styles.modalBody}>
+              {stores.map(store => (
+                <View
+                  key={store.id}
+                  className={styles.formInput}
+                  style={{
+                    marginBottom: 16,
+                    border: store.id === currentStoreId ? '2rpx solid #ff7d00' : 'none',
+                    background: store.id === currentStoreId ? '#fff7e8' : '#fff'
+                  }}
+                  onClick={() => {
+                    setCurrentStoreId(store.id);
+                    setShowStoreModal(false);
+                  }}
+                >
+                  <View style={{ fontWeight: 600, color: '#1d2129' }}>{store.name}</View>
+                  <View style={{ fontSize: 24, color: '#86909c', marginTop: 8 }}>
+                    {store.distance} · {store.address}
+                  </View>
+                  <View style={{ fontSize: 22, color: '#ff7d00', marginTop: 8 }}>
+                    整改 {rectifications.filter(r => r.storeId === store.id).length} 项
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
           </View>
         </View>
       )}

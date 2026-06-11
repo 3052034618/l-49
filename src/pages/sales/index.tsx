@@ -26,14 +26,13 @@ const SalesPage: React.FC = () => {
   const storeRecords = useMemo(() => salesRecords.filter(r => r.storeId === currentStoreId), [salesRecords, currentStoreId]);
 
   const totals = useMemo(() => {
-    const allRecords = salesRecords;
-    const totalAmount = allRecords.reduce((sum, r) => sum + r.totalAmount, 0);
-    const totalStores = new Set(allRecords.map(r => r.storeId)).size;
-    const todayAmount = salesRecords
+    const totalAmount = storeRecords.reduce((sum, r) => sum + r.totalAmount, 0);
+    const recordCount = storeRecords.length;
+    const todayAmount = storeRecords
       .filter(r => r.date === '2026-06-11')
       .reduce((sum, r) => sum + r.totalAmount, 0);
-    return { totalAmount, totalStores, todayAmount };
-  }, [salesRecords]);
+    return { totalAmount, totalStores: storeRecords.length > 0 ? 1 : 0, todayAmount, recordCount };
+  }, [storeRecords]);
 
   const totalCurrentAmount = useMemo(
     () => products.reduce((sum, p) => sum + p.price * p.quantity, 0),

@@ -9,6 +9,7 @@ import type { ShelfTask, CompetitorPrice, MaterialItem } from '@/types';
 import { getScoreColor } from '@/utils';
 
 type FilterType = 'all' | 'pending' | 'submitted' | 'approved' | 'rejected';
+type ModalMode = 'edit' | 'view' | 'reedit';
 
 const defaultMaterials: MaterialItem[] = [
   { name: '品牌海报', placed: true },
@@ -23,7 +24,9 @@ const InspectionPage: React.FC = () => {
   const [filter, setFilter] = useState<FilterType>('all');
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showStoreModal, setShowStoreModal] = useState(false);
+  const [showStockModal, setShowStockModal] = useState(false);
   const [currentTask, setCurrentTask] = useState<ShelfTask | null>(null);
+  const [modalMode, setModalMode] = useState<ModalMode>('edit');
 
   const [photos, setPhotos] = useState<string[]>([]);
   const [isOutOfStock, setIsOutOfStock] = useState(false);
@@ -34,7 +37,6 @@ const InspectionPage: React.FC = () => {
   const [materials, setMaterials] = useState<MaterialItem[]>(defaultMaterials);
   const [score, setScore] = useState(85);
   const [remark, setRemark] = useState('');
-  const [showStockModal, setShowStockModal] = useState(false);
   const [stockChecked, setStockChecked] = useState(false);
 
   const currentStore = useMemo(
@@ -77,6 +79,13 @@ const InspectionPage: React.FC = () => {
     setScore(task.score || 85);
     setRemark(task.remark || '');
     setStockChecked(task.status !== 'pending');
+    if (task.status === 'pending') {
+      setModalMode('edit');
+    } else if (task.status === 'rejected') {
+      setModalMode('reedit');
+    } else {
+      setModalMode('view');
+    }
     setShowTaskModal(true);
   };
 
@@ -269,13 +278,20 @@ const InspectionPage: React.FC = () => {
                   {photos.map((photo, idx) => (
                     <View key={idx} className={styles.photoItem}>
                       <Image src={photo} className={styles.photoImg} mode="aspectFill" />
-                      <View className={styles.photoRemove} onClick={() => removePhoto(idx)}>×</View>
+                      {modalMode !== 'view' && (
+                        <View className={styles.photoRemove} onClick={() => removePhoto(idx)}>×</View>
+                      )}
                     </View>
                   ))}
-                  {photos.length < 9 && (
+                  {photos.length < 9 && modalMode !== 'view' && (
                     <View className={styles.photoAdd} onClick={takePhoto}>
                       <Text className={styles.addIcon}>📷</Text>
                       <Text className={styles.addText}>拍照/上传</Text>
+                    </View>
+                  )}
+                  {photos.length === 0 && modalMode === 'view' && (
+                    <View style={{ width: '100%', padding: '60rpx 0', textAlign: 'center', color: '#86909c' }}>
+                      <Text>暂无照片</Text>
                     </View>
                   )}
                 </View>
@@ -324,75 +340,107 @@ const InspectionPage: React.FC = () => {
                         {isOutOfStock ? `⚠️ 缺货：${(outOfStockItems || '').split('、').filter(Boolean).length} 项` : '✅ 库存充足'}
                       </Text>
                     </View>
-                    <View
-                      className={styles.formInput}
-                      style={{
-                        marginTop: 16,
-                        textAlign: 'center',
-                        color: '#86909c',
-                        border: '2rpx solid #e5e6eb'
-                      }}
-                      onClick={() => setShowStockModal(true)}
-                    >
-                      <Text>重新确认库存</Text>
-                    </View>
+                    {modalMode !== 'view' && (
+                      <View
+                        className={styles.formInput}
+                        style={{
+                          marginTop: 16,
+                          textAlign: 'center',
+                          color: '#86909c',
+                          border: '2rpx solid #e5e6eb'
+                        }}
+                        onClick={() => setShowStockModal(true)}
+                      >
+                        <Text>重新确认库存</Text>
+                      </View>
+                    )}
                   </View>
                 )}
                 {isOutOfStock && (
                   <View className={styles.formRow} style={{ marginTop: 24 }}>
                     <Text className={styles.formLabel}>缺货商品 <Text className={styles.required}>*</Text></Text>
-                    <Textarea
-                      className={styles.formTextarea}
-                      placeholder="请输入缺货SKU，多个用顿号分隔（如：可乐330ml、雪碧500ml）"
-                      value={outOfStockItems}
-                      onInput={e => setOutOfStockItems(e.detail.value)}
-                      onBlur={() => {
-                        if (outOfStockItems.trim()) setStockChecked(true);
-                      }}
-                    />
+                    {modalMode === 'view' ? (
+                      <View style={{ padding: '20rpx 24rpx', background: '#f7f8fa', borderRadius: 12, marginTop: 8 }}>
+                        <Text style={{ color: '#4e5969', fontSize: 28, lineHeight: '40rpx' }}>
+                          {outOfStockItems || '-'}
+                        </Text>
+                      </View>
+                    ) : (
+                      <Textarea
+                        className={styles.formTextarea}
+                        placeholder="请输入缺货SKU，多个用顿号分隔（如：可乐330ml、雪碧500ml）"
+                        value={outOfStockItems}
+                        onInput={e => setOutOfStockItems(e.detail.value)}
+                        onBlur={() => {
+                          if (outOfStockItems.trim()) setStockChecked(true);
+                        }}
+                      />
+                    )}
                   </View>
                 )}
               </View>
 
               <View className={styles.formSection}>
                 <Text className={styles.sectionHeader}>🏷️ 竞品价格</Text>
-                {competitors.map((comp, idx) => (
-                  <View key={idx}>
-                    <View className={styles.competitorRow}>
-                      <Input
-                        className={styles.compInput}
-                        placeholder="品牌名称"
-                        value={comp.brand}
-                        onInput={e => updateCompetitor(idx, 'brand', e.detail.value)}
-                      />
-                      <Input
-                        className={styles.compInput}
-                        placeholder="商品规格"
-                        value={comp.product}
-                        onInput={e => updateCompetitor(idx, 'product', e.detail.value)}
-                      />
+                {modalMode === 'view' ? (
+                  competitors.filter(c => c.brand && c.product).length === 0 ? (
+                    <View style={{ padding: '32rpx 0', textAlign: 'center', color: '#86909c' }}>
+                      <Text>暂无竞品价格记录</Text>
                     </View>
-                    <View className={styles.competitorRow}>
-                      <Input
-                        className={styles.compInput}
-                        type="digit"
-                        placeholder="售价(元)"
-                        value={String(comp.price || '')}
-                        onInput={e => updateCompetitor(idx, 'price', Number(e.detail.value) || 0)}
-                      />
-                      <Input
-                        className={styles.compInput}
-                        placeholder="促销信息(选填)"
-                        value={comp.promotion || ''}
-                        onInput={e => updateCompetitor(idx, 'promotion', e.detail.value)}
-                      />
-                    </View>
-                  </View>
-                ))}
-                {competitors.length < 5 && (
-                  <View className={styles.formInput} style={{ textAlign: 'center', marginTop: 16 }} onClick={addCompetitor}>
-                    <Text style={{ color: '#165dff' }}>+ 添加竞品</Text>
-                  </View>
+                  ) : (
+                    competitors.filter(c => c.brand && c.product).map((comp, idx) => (
+                      <View key={idx} style={{ padding: '20rpx 24rpx', background: '#f7f8fa', borderRadius: 12, marginBottom: 16 }}>
+                        <View style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <Text style={{ fontWeight: 600, color: '#1d2129' }}>{comp.brand} - {comp.product}</Text>
+                          <Text style={{ color: '#f53f3f', fontWeight: 600 }}>¥{comp.price}</Text>
+                        </View>
+                        {comp.promotion && (
+                          <Text style={{ fontSize: 24, color: '#ff7d00' }}>促销：{comp.promotion}</Text>
+                        )}
+                      </View>
+                    ))
+                  )
+                ) : (
+                  <>
+                    {competitors.map((comp, idx) => (
+                      <View key={idx}>
+                        <View className={styles.competitorRow}>
+                          <Input
+                            className={styles.compInput}
+                            placeholder="品牌名称"
+                            value={comp.brand}
+                            onInput={e => updateCompetitor(idx, 'brand', e.detail.value)}
+                          />
+                          <Input
+                            className={styles.compInput}
+                            placeholder="商品规格"
+                            value={comp.product}
+                            onInput={e => updateCompetitor(idx, 'product', e.detail.value)}
+                          />
+                        </View>
+                        <View className={styles.competitorRow}>
+                          <Input
+                            className={styles.compInput}
+                            type="digit"
+                            placeholder="售价(元)"
+                            value={String(comp.price || '')}
+                            onInput={e => updateCompetitor(idx, 'price', Number(e.detail.value) || 0)}
+                          />
+                          <Input
+                            className={styles.compInput}
+                            placeholder="促销信息(选填)"
+                            value={comp.promotion || ''}
+                            onInput={e => updateCompetitor(idx, 'promotion', e.detail.value)}
+                          />
+                        </View>
+                      </View>
+                    ))}
+                    {competitors.length < 5 && (
+                      <View className={styles.formInput} style={{ textAlign: 'center', marginTop: 16 }} onClick={addCompetitor}>
+                        <Text style={{ color: '#165dff' }}>+ 添加竞品</Text>
+                      </View>
+                    )}
+                  </>
                 )}
               </View>
 
@@ -401,12 +449,22 @@ const InspectionPage: React.FC = () => {
                 {materials.map((mat, idx) => (
                   <View key={idx} className={styles.switchRow}>
                     <Text className={styles.switchLabel}>{mat.name}</Text>
-                    <View
-                      className={`${styles.tagItem} ${mat.placed ? styles.active : ''}`}
-                      onClick={() => toggleMaterial(idx)}
-                    >
-                      <Text>{mat.placed ? '✓ 已摆放' : '未摆放'}</Text>
-                    </View>
+                    {modalMode === 'view' ? (
+                      <Text style={{
+                        fontSize: 26,
+                        color: mat.placed ? '#00b42a' : '#86909c',
+                        fontWeight: 500
+                      }}>
+                        {mat.placed ? '✓ 已摆放' : '未摆放'}
+                      </Text>
+                    ) : (
+                      <View
+                        className={`${styles.tagItem} ${mat.placed ? styles.active : ''}`}
+                        onClick={() => toggleMaterial(idx)}
+                      >
+                        <Text>{mat.placed ? '✓ 已摆放' : '未摆放'}</Text>
+                      </View>
+                    )}
                   </View>
                 ))}
               </View>
@@ -425,31 +483,48 @@ const InspectionPage: React.FC = () => {
                       {getScoreLevel().text}
                     </View>
                   </View>
-                  <View
-                    className={styles.sliderTrack}
-                    onClick={e => {
-                      const target = e.currentTarget;
-                      const rect = target.getBoundingClientRect?.() || { width: 300, left: 0 };
-                      const x = (e.touches?.[0]?.clientX || e.clientX || 150) - rect.left;
-                      const percent = Math.max(0, Math.min(1, x / rect.width));
-                      setScore(Math.round(60 + percent * 40));
-                    }}
-                  >
-                    <View
-                      className={styles.sliderFill}
-                      style={{
-                        width: `${((score - 60) / 40) * 100}%`,
-                        background: `linear-gradient(90deg, ${getScoreColor(60)}, ${getScoreColor(score)})`
-                      }}
-                    />
-                    <View
-                      className={styles.sliderThumb}
-                      style={{ left: `${((score - 60) / 40) * 100}%`, borderColor: getScoreColor(score) }}
-                    />
-                  </View>
-                  <View className={styles.scoreLabels}>
-                    <Text>60</Text><Text>70</Text><Text>80</Text><Text>90</Text><Text>100</Text>
-                  </View>
+                  {modalMode === 'view' ? (
+                    <View style={{ padding: '32rpx 0', textAlign: 'center' }}>
+                      <View style={{ fontSize: 48, marginBottom: 16 }}>
+                        {[1, 2, 3, 4, 5].map(s => (
+                          <Text key={s} style={{ fontSize: 48, marginRight: 8 }}>
+                            {s <= Math.ceil(score / 20) ? '⭐' : '☆'}
+                          </Text>
+                        ))}
+                      </View>
+                      <Text style={{ fontSize: 24, color: '#86909c' }}>
+                        {score >= 90 ? '非常棒，继续保持！' : score >= 80 ? '表现良好' : score >= 70 ? '基本合格，还需提升' : '有待改进'}
+                      </Text>
+                    </View>
+                  ) : (
+                    <>
+                      <View
+                        className={styles.sliderTrack}
+                        onClick={e => {
+                          const target = e.currentTarget;
+                          const rect = target.getBoundingClientRect?.() || { width: 300, left: 0 };
+                          const x = (e.touches?.[0]?.clientX || e.clientX || 150) - rect.left;
+                          const percent = Math.max(0, Math.min(1, x / rect.width));
+                          setScore(Math.round(60 + percent * 40));
+                        }}
+                      >
+                        <View
+                          className={styles.sliderFill}
+                          style={{
+                            width: `${((score - 60) / 40) * 100}%`,
+                            background: `linear-gradient(90deg, ${getScoreColor(60)}, ${getScoreColor(score)})`
+                          }}
+                        />
+                        <View
+                          className={styles.sliderThumb}
+                          style={{ left: `${((score - 60) / 40) * 100}%`, borderColor: getScoreColor(score) }}
+                        />
+                      </View>
+                      <View className={styles.scoreLabels}>
+                        <Text>60</Text><Text>70</Text><Text>80</Text><Text>90</Text><Text>100</Text>
+                      </View>
+                    </>
+                  )}
                 </View>
                 <View className={styles.scoreCriteria}>
                   {[
@@ -475,19 +550,50 @@ const InspectionPage: React.FC = () => {
 
               <View className={styles.formSection}>
                 <Text className={styles.sectionHeader}>📝 巡查备注</Text>
-                <Textarea
-                  className={styles.formTextarea}
-                  placeholder="请输入巡查备注、问题描述或特殊说明..."
-                  value={remark}
-                  onInput={e => setRemark(e.detail.value)}
-                  maxlength={500}
-                />
+                {modalMode === 'view' ? (
+                  <View style={{ padding: '20rpx 24rpx', background: '#f7f8fa', borderRadius: 12, minHeight: 100 }}>
+                    <Text style={{ color: '#4e5969', fontSize: 28, lineHeight: '44rpx' }}>
+                      {remark || '暂无备注'}
+                    </Text>
+                  </View>
+                ) : (
+                  <Textarea
+                    className={styles.formTextarea}
+                    placeholder="请输入巡查备注、问题描述或特殊说明..."
+                    value={remark}
+                    onInput={e => setRemark(e.detail.value)}
+                    maxlength={500}
+                  />
+                )}
               </View>
+
+              {(modalMode === 'view' || modalMode === 'reedit') && currentTask?.auditComment && (
+                <View className={styles.formSection} style={{ background: currentTask.auditResult === 'pass' ? '#e8ffea' : '#ffece8', borderRadius: 16 }}>
+                  <Text className={styles.sectionHeader} style={{ color: currentTask.auditResult === 'pass' ? '#00b42a' : '#f53f3f' }}>
+                    {currentTask.auditResult === 'pass' ? '✅ 审核通过' : '❌ 主管退回意见'}
+                  </Text>
+                  <View style={{ padding: '20rpx 24rpx', background: '#fff', borderRadius: 12, marginTop: 12 }}>
+                    <Text style={{ color: '#4e5969', fontSize: 28, lineHeight: '44rpx' }}>
+                      {currentTask.auditComment}
+                    </Text>
+                  </View>
+                </View>
+              )}
             </ScrollView>
             <View className={styles.modalFooter}>
-              <View className={styles.submitBtn} onClick={submitTask}>
-                <Text>提交巡查结果</Text>
-              </View>
+              {modalMode === 'view' ? (
+                <View className={styles.submitBtn} style={{ background: 'linear-gradient(135deg, #86909c 0%, #4e5969 100%)' }} onClick={() => setShowTaskModal(false)}>
+                  <Text>关闭详情</Text>
+                </View>
+              ) : modalMode === 'reedit' ? (
+                <View className={styles.submitBtn} style={{ background: 'linear-gradient(135deg, #ff7d00 0%, #ff9a2e 100%)' }} onClick={submitTask}>
+                  <Text>重新提交巡查</Text>
+                </View>
+              ) : (
+                <View className={styles.submitBtn} onClick={submitTask}>
+                  <Text>提交巡查结果</Text>
+                </View>
+              )}
             </View>
           </View>
         </View>

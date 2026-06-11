@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text } from '@tarojs/components';
 import styles from './index.module.scss';
 import type { Store } from '@/types';
-import { getStatusText, getStatusColor } from '@/utils';
+import { getStatusText, getStatusColor, formatCurrency } from '@/utils';
+import { useApp } from '@/store/app';
 
 interface StoreCardProps {
   store: Store;
@@ -12,6 +13,21 @@ interface StoreCardProps {
 }
 
 const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, onCheckin, onCheckout }) => {
+  const { shelfTasks, rectifications, salesRecords } = useApp();
+
+  const metrics = useMemo(() => {
+    const storeTasks = shelfTasks.filter(t => t.storeId === store.id);
+    const photoDone = storeTasks.filter(t => t.status !== 'pending').length;
+    const outOfStock = storeTasks.filter(t => t.isOutOfStock).length;
+    const pendingRect = rectifications.filter(
+      r => r.storeId === store.id && r.status !== 'approved' && r.status !== 'completed'
+    ).length;
+    const todaySales = salesRecords
+      .filter(s => s.storeId === store.id)
+      .reduce((a, b) => a + b.totalAmount, 0);
+    return { photoDone, outOfStock, pendingRect, todaySales, totalTasks: storeTasks.length };
+  }, [shelfTasks, rectifications, salesRecords, store.id]);
+
   const progress = store.taskCount > 0 ? Math.round((store.completedTaskCount / store.taskCount) * 100) : 0;
   const statusColor = getStatusColor(store.status);
 
@@ -62,6 +78,25 @@ const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, onCheckin, onChec
             }`}
             style={{ width: `${progress}%` }}
           />
+        </View>
+      </View>
+
+      <View className={styles.metricsGrid}>
+        <View className={styles.metricItem}>
+          <Text className={styles.metricValue} style={{ color: '#165dff' }}>{metrics.photoDone}</Text>
+          <Text className={styles.metricLabel}>📷 已拍照</Text>
+        </View>
+        <View className={styles.metricItem}>
+          <Text className={styles.metricValue} style={{ color: '#f53f3f' }}>{metrics.outOfStock}</Text>
+          <Text className={styles.metricLabel}>⚠️ 缺货</Text>
+        </View>
+        <View className={styles.metricItem}>
+          <Text className={styles.metricValue} style={{ color: '#ff7d00' }}>{metrics.pendingRect}</Text>
+          <Text className={styles.metricLabel}>🛠️ 待整改</Text>
+        </View>
+        <View className={styles.metricItem}>
+          <Text className={styles.metricValue} style={{ color: '#00b42a' }}>¥{metrics.todaySales >= 1000 ? (metrics.todaySales / 1000).toFixed(1) + 'k' : Math.round(metrics.todaySales)}</Text>
+          <Text className={styles.metricLabel}>💰 销量</Text>
         </View>
       </View>
 

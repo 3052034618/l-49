@@ -23,6 +23,56 @@
   opacity: 0.85;
 }
 
+.storeBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: $spacing-md $page-padding 0;
+  padding: $spacing-md $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.storeInfo {
+  flex: 1;
+
+  .storeLabel {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    display: block;
+    margin-bottom: 4rpx;
+  }
+
+  .storeName {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    display: block;
+    margin-bottom: 4rpx;
+  }
+
+  .storeAddr {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    display: block;
+  }
+}
+
+.storeSwitch {
+  padding: $spacing-sm $spacing-md;
+  background: linear-gradient(135deg, $color-accent 0%, $color-accent-light 100%);
+  border-radius: $radius-button;
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.95);
+  }
+}
+
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

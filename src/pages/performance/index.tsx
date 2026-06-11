@@ -1,12 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Image } from '@tarojs/components';
+import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
 
 import { useApp } from '@/store/app';
 import { formatCurrency } from '@/utils';
 
 const PerformancePage: React.FC = () => {
-  const { performance, user, stores, shelfTasks, rectifications, salesRecords } = useApp();
+  const { performance, user, stores, shelfTasks, rectifications, salesRecords, setCurrentStoreId } = useApp();
+  const [detailTab, setDetailTab] = useState<'store' | 'category'>('store');
 
   const totals = useMemo(() => {
     const total = stores.length;
@@ -32,6 +34,56 @@ const PerformancePage: React.FC = () => {
   }, [stores, shelfTasks, rectifications, salesRecords]);
 
   const maxWeekValue = Math.max(...performance.weeklyData.map(d => d.target));
+
+  const storeDetails = useMemo(() => {
+    return stores.map(store => {
+      const storeTasks = shelfTasks.filter(t => t.storeId === store.id);
+      const doneTasks = storeTasks.filter(t => t.status !== 'pending').length;
+      const pendingTasks = storeTasks.filter(t => t.status === 'pending').length;
+      const openRects = rectifications.filter(
+        r => r.storeId === store.id && r.status !== 'approved' && r.status !== 'completed'
+      ).length;
+      const storeSales = salesRecords
+        .filter(s => s.storeId === store.id)
+        .reduce((a, b) => a + b.totalAmount, 0);
+      const rate = storeTasks.length > 0 ? Math.round((doneTasks / storeTasks.length) * 100) : 0;
+      return {
+        id: store.id,
+        name: store.name,
+        status: store.status,
+        totalTasks: storeTasks.length,
+        doneTasks,
+        pendingTasks,
+        openRects,
+        sales: storeSales,
+        rate
+      };
+    }).sort((a, b) => b.rate - a.rate);
+  }, [stores, shelfTasks, rectifications, salesRecords]);
+
+  const categoryDetails = useMemo(() => {
+    const map = new Map<string, { name: string; total: number; done: number; pending: number; outOfStock: number }>();
+    shelfTasks.forEach(task => {
+      const cat = task.category || '其他';
+      if (!map.has(cat)) {
+        map.set(cat, { name: cat, total: 0, done: 0, pending: 0, outOfStock: 0 });
+      }
+      const item = map.get(cat)!;
+      item.total += 1;
+      if (task.status !== 'pending') item.done += 1;
+      else item.pending += 1;
+      if (task.isOutOfStock) item.outOfStock += 1;
+    });
+    return Array.from(map.values()).map(item => ({
+      ...item,
+      rate: item.total > 0 ? Math.round((item.done / item.total) * 100) : 0
+    })).sort((a, b) => b.rate - a.rate);
+  }, [shelfTasks]);
+
+  const goToStore = (storeId: string) => {
+    setCurrentStoreId(storeId);
+    Taro.switchTab({ url: '/pages/inspection/index' });
+  };
 
   return (
     <ScrollView scrollY className={styles.page} refresherEnabled>
@@ -243,6 +295,122 @@ const PerformancePage: React.FC = () => {
             );
           })}
         </View>
+      </View>
+
+      <View className={styles.sectionCard}>
+        <View className={styles.sectionHeader}>
+          <Text className={styles.sectionTitle}>📋 执行明细</Text>
+          <View className={styles.detailTabs}>
+            <Text
+              className={`${styles.detailTab} ${detailTab === 'store' ? styles.active : ''}`}
+              onClick={() => setDetailTab('store')}
+            >
+              按门店
+            </Text>
+            <Text
+              className={`${styles.detailTab} ${detailTab === 'category' ? styles.active : ''}`}
+              onClick={() => setDetailTab('category')}
+            >
+              按任务类型
+            </Text>
+          </View>
+        </View>
+
+        {detailTab === 'store' && (
+          <View className={styles.detailList}>
+            {storeDetails.map((store, idx) => (
+              <View key={store.id} className={styles.detailItem} onClick={() => goToStore(store.id)}>
+                <View className={styles.detailRank}>
+                  <Text style={{
+                    color: idx === 0 ? '#f7ba1e' : idx === 1 ? '#86909c' : idx === 2 ? '#ad6800' : '#c9cdd4',
+                    fontWeight: 700,
+                    fontSize: 28
+                  }}>
+                    {idx + 1}
+                  </Text>
+                </View>
+                <View className={styles.detailContent}>
+                  <View className={styles.detailTop}>
+                    <Text className={styles.detailName}>{store.name}</Text>
+                    <Text
+                      className={styles.detailRate}
+                      style={{
+                        color: store.rate >= 80 ? '#00b42a' : store.rate >= 50 ? '#ff7d00' : '#f53f3f'
+                      }}
+                    >
+                      {store.rate}%
+                    </Text>
+                  </View>
+                  <View className={styles.detailBar}>
+                    <View
+                      className={styles.detailBarFill}
+                      style={{
+                        width: `${store.rate}%`,
+                        background: store.rate >= 80 ? 'linear-gradient(90deg, #00b42a, #2ed552)' :
+                          store.rate >= 50 ? 'linear-gradient(90deg, #ff7d00, #ff9a2e)' :
+                          'linear-gradient(90deg, #f53f3f, #ff6b6b)'
+                      }}
+                    />
+                  </View>
+                  <View className={styles.detailMeta}>
+                    <Text className={styles.metaText}>📋 {store.doneTasks}/{store.totalTasks} 任务</Text>
+                    <Text className={styles.metaText}>⚠️ {store.pendingTasks} 待巡查</Text>
+                    <Text className={styles.metaText}>🛠️ {store.openRects} 待整改</Text>
+                    <Text className={styles.metaText}>💰 ¥{store.sales >= 1000 ? (store.sales / 1000).toFixed(1) + 'k' : store.sales}</Text>
+                  </View>
+                </View>
+                <Text className={styles.detailArrow}>›</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {detailTab === 'category' && (
+          <View className={styles.detailList}>
+            {categoryDetails.map((cat, idx) => (
+              <View key={cat.name} className={styles.detailItem}>
+                <View className={styles.detailRank}>
+                  <Text style={{
+                    color: idx === 0 ? '#f7ba1e' : idx === 1 ? '#86909c' : idx === 2 ? '#ad6800' : '#c9cdd4',
+                    fontWeight: 700,
+                    fontSize: 28
+                  }}>
+                    {idx + 1}
+                  </Text>
+                </View>
+                <View className={styles.detailContent}>
+                  <View className={styles.detailTop}>
+                    <Text className={styles.detailName}>{cat.name}</Text>
+                    <Text
+                      className={styles.detailRate}
+                      style={{
+                        color: cat.rate >= 80 ? '#00b42a' : cat.rate >= 50 ? '#ff7d00' : '#f53f3f'
+                      }}
+                    >
+                      {cat.rate}%
+                    </Text>
+                  </View>
+                  <View className={styles.detailBar}>
+                    <View
+                      className={styles.detailBarFill}
+                      style={{
+                        width: `${cat.rate}%`,
+                        background: cat.rate >= 80 ? 'linear-gradient(90deg, #00b42a, #2ed552)' :
+                          cat.rate >= 50 ? 'linear-gradient(90deg, #ff7d00, #ff9a2e)' :
+                          'linear-gradient(90deg, #f53f3f, #ff6b6b)'
+                      }}
+                    />
+                  </View>
+                  <View className={styles.detailMeta}>
+                    <Text className={styles.metaText}>✅ {cat.done}/{cat.total} 完成</Text>
+                    <Text className={styles.metaText}>⏳ {cat.pending} 待做</Text>
+                    <Text className={styles.metaText}>📦 缺货 {cat.outOfStock} 项</Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
 
       <View className={styles.infoList}>

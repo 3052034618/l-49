@@ -192,3 +192,32 @@
     font-weight: $font-weight-medium;
   }
 }
+
+.metricsGrid {
+  display: flex;
+  justify-content: space-between;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-md;
+  padding: $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+}
+
+.metricItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+
+  .metricValue {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    line-height: 1.2;
+  }
+
+  .metricLabel {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+  }
+}

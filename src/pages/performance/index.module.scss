@@ -479,3 +479,109 @@
     gap: $spacing-xs;
   }
 }
+
+.detailTabs {
+  display: flex;
+  gap: $spacing-xs;
+}
+
+.detailTab {
+  padding: 8rpx 24rpx;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-normal;
+  transition: all 0.2s ease;
+
+  &.active {
+    background: rgba($color-primary, 0.08);
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.detailList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  transition: background 0.2s ease;
+
+  &:active {
+    background: rgba($color-primary, 0.04);
+  }
+}
+
+.detailRank {
+  width: 48rpx;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.detailContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.detailTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-xs;
+}
+
+.detailName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+  flex: 1;
+}
+
+.detailRate {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  flex-shrink: 0;
+  margin-left: $spacing-sm;
+}
+
+.detailBar {
+  height: 12rpx;
+  background: $color-divider;
+  border-radius: $radius-round;
+  overflow: hidden;
+  margin-bottom: $spacing-sm;
+}
+
+.detailBarFill {
+  height: 100%;
+  border-radius: $radius-round;
+  transition: width 0.5s ease;
+}
+
+.detailMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm $spacing-md;
+}
+
+.metaText {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+  white-space: nowrap;
+}
+
+.detailArrow {
+  font-size: 40rpx;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+  font-weight: 300;
+}
